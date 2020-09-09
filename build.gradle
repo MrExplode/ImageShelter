@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+}
+
+group 'me.ahornyai'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'io.javalin:javalin:3.10.1'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation "com.google.guava:guava:29.0-jre"
+    compile "org.slf4j:slf4j-simple:1.7.30"
+
+    //lombok
+    compileOnly 'org.projectlombok:lombok:1.18.12'
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.12'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+    //junit
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
