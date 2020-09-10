@@ -16,6 +16,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation "com.google.guava:guava:29.0-jre"
     compile "org.slf4j:slf4j-simple:1.7.30"
+    compile 'com.moandjiezana.toml:toml4j:0.7.2'
 
     //lombok
     compileOnly 'org.projectlombok:lombok:1.18.12'
