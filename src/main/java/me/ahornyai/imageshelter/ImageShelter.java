@@ -1,12 +1,11 @@
 package me.ahornyai.imageshelter;
 
-import com.google.common.base.Stopwatch;
-import io.javalin.Javalin;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import me.ahornyai.imageshelter.config.Config;
 import me.ahornyai.imageshelter.config.ConfigHandler;
 import me.ahornyai.imageshelter.http.HttpHandler;
+import org.apache.commons.lang3.time.StopWatch;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -20,7 +19,7 @@ public class ImageShelter {
 
     public ImageShelter() {
         instance = this;
-        Stopwatch startWatch = Stopwatch.createStarted();
+        StopWatch startWatch = StopWatch.createStarted();
 
         try {
             log.info("Loading config...");
@@ -36,7 +35,8 @@ public class ImageShelter {
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::onStop));
 
-        log.info("ImageShelter started at " + startWatch.stop().elapsed(TimeUnit.MILLISECONDS) + " ms.");
+        startWatch.stop();
+        log.info("ImageShelter started at " + startWatch.getTime(TimeUnit.MILLISECONDS) + " ms.");
     }
 
     public void onStop() {

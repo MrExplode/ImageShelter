@@ -16,13 +16,15 @@ public class ConfigHandler {
     }
 
     public void loadOrSave() throws IOException {
+        File file = new File("config.toml");
+
         try {
-            this.config = new Toml().read(new File("config.toml")).to(Config.class);
+            this.config = new Toml().read(file).to(Config.class);
         }catch (Exception ex) {
             this.config = new Config();
 
             TomlWriter writer = new TomlWriter();
-            writer.write(config, new File("config.toml"));
+            writer.write(config, file);
         }
     }
 
