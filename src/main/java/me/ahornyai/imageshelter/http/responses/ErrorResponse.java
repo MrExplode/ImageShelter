@@ -4,6 +4,6 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class ErrorResponse {
-    private int code;
+    private String code;
     private String message;
 }

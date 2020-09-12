@@ -12,7 +12,7 @@ public class UploadEndpoint implements Handler {
     @Override
     public void handle(@NotNull Context ctx) {
         if (!ctx.isMultipartFormData()) {
-            ctx.json(new ErrorResponse(404, "The request's content type is not multipart/form-data."))
+            ctx.json(new ErrorResponse("NOT_FORM_DATA", "The request's content type is not multipart/form-data."))
                 .status(404);
 
             return;
@@ -21,24 +21,23 @@ public class UploadEndpoint implements Handler {
         UploadedFile uploadedFile = ctx.uploadedFile("image");
         String secret = ctx.formParam("secret");
 
-
         if (secret == null) {
-            ctx.json(new ErrorResponse(404, "I need a secret."))
+            ctx.json(new ErrorResponse("MISSING_SECRET", "I need a secret."))
                     .status(404);
 
             return;
         }
 
         if (!ArrayUtils.contains(ImageShelter.getInstance().getConfig().getSecrets(), secret)) {
-            ctx.json(new ErrorResponse(403, "Wrong secret."))
+            ctx.json(new ErrorResponse("WRONG_SECRET", "Wrong secret."))
                     .status(403);
 
             return;
         }
 
         if (uploadedFile == null) {
-            ctx.json(new ErrorResponse(404, "I need an image."))
-                    .status(404);
+            ctx.json(new ErrorResponse("MISSING_IMAGE", "I need an image."))
+                    .status(400);
 
             return;
         }
