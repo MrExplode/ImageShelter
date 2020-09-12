@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import me.ahornyai.imageshelter.config.Config;
 import me.ahornyai.imageshelter.config.ConfigHandler;
+import me.ahornyai.imageshelter.http.HttpHandler;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -14,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ImageShelter {
     @Getter private static ImageShelter instance;
-    private Javalin javalin;
+    private HttpHandler httpHandler;
     private ConfigHandler configHandler;
 
     public ImageShelter() {
@@ -29,9 +30,17 @@ public class ImageShelter {
             ex.printStackTrace();
             System.exit(1);
         }
-        this.javalin = Javalin.create().start(getConfig().getPort());
+
+        //TODO: fileHandler
+        this.httpHandler = new HttpHandler(getConfig().getPort());
+
+        Runtime.getRuntime().addShutdownHook(new Thread(this::onStop));
 
         log.info("ImageShelter started at " + startWatch.stop().elapsed(TimeUnit.MILLISECONDS) + " ms.");
+    }
+
+    public void onStop() {
+        httpHandler.stop();
     }
 
     public Config getConfig() {
