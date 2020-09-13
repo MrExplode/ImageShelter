@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.regex.Pattern;
@@ -18,6 +17,7 @@ public class ViewEndpoint implements Handler {
     @Override
     public void handle(@NotNull Context ctx) throws IOException {
         String fileParam = ctx.pathParam("file");
+        String keyParam = ctx.pathParam("key");
 
         if (PATH_TRAVERSAL.matcher(fileParam).find()) {
             ctx.redirect("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
