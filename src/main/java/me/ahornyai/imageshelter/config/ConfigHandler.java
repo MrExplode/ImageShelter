@@ -11,7 +11,7 @@ import java.io.IOException;
 public class ConfigHandler {
     private Config config;
 
-    public  ConfigHandler() throws IOException {
+    public ConfigHandler() throws IOException {
         loadOrSave();
     }
 

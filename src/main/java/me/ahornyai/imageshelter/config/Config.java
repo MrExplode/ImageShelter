@@ -1,10 +1,12 @@
 package me.ahornyai.imageshelter.config;
 
 import lombok.Getter;
+import lombok.ToString;
 import org.apache.commons.lang3.RandomStringUtils;
 
 @Getter
+@ToString
 public class Config {
-    private int port = 8282;
-    private String[] secrets = new String[]{RandomStringUtils.randomAlphanumeric(32)};
+    private final Integer port = 8282;
+    private final String[] secrets = new String[]{RandomStringUtils.randomAlphanumeric(32)};
 }

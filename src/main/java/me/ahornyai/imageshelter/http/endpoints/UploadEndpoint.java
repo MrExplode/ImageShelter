@@ -1,14 +1,22 @@
 package me.ahornyai.imageshelter.http.endpoints;
 
+import io.javalin.core.util.FileUtil;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
 import me.ahornyai.imageshelter.ImageShelter;
 import me.ahornyai.imageshelter.http.responses.ErrorResponse;
+import me.ahornyai.imageshelter.http.responses.SuccessUploadResponse;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class UploadEndpoint implements Handler {
+    private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("png", "jpg", "jpeg", "bmp", "gif");
+
     @Override
     public void handle(@NotNull Context ctx) {
         if (!ctx.isMultipartFormData()) {
@@ -42,8 +50,18 @@ public class UploadEndpoint implements Handler {
             return;
         }
 
-        //TODO: file validation
+        if (ALLOWED_EXTENSIONS.stream().noneMatch(uploadedFile.getExtension().substring(1)::equalsIgnoreCase)) {
+            ctx.json(new ErrorResponse("WRONG_EXTENSION", "Wrong extension (" + uploadedFile.getExtension().substring(1) + "). Supported extensions: " + ALLOWED_EXTENSIONS))
+                    .status(400);
 
-        ctx.result("upload endpoint secret: " + secret);
+            return;
+        }
+
+        //TODO: encryption, compressing
+
+        String name = RandomStringUtils.randomAlphanumeric(32) + uploadedFile.getExtension();
+        FileUtil.streamToFile(uploadedFile.getContent(),"uploads/" + name);
+
+        ctx.json(new SuccessUploadResponse(name, "asdasd"));
     }
 }

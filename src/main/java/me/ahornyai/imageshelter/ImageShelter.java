@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ImageShelter {
     @Getter private static ImageShelter instance;
-    private HttpHandler httpHandler;
+    private final HttpHandler httpHandler;
     private ConfigHandler configHandler;
 
     public ImageShelter() {
