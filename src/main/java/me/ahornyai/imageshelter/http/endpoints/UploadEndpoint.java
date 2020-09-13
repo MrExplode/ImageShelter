@@ -12,10 +12,9 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class UploadEndpoint implements Handler {
-    private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("png", "jpg", "jpeg", "bmp", "gif");
+    private static final String[] ALLOWED_EXTENSIONS = ImageShelter.getInstance().getConfig().getAllowedExtensions();
 
     @Override
     public void handle(@NotNull Context ctx) {
@@ -50,7 +49,7 @@ public class UploadEndpoint implements Handler {
             return;
         }
 
-        if (ALLOWED_EXTENSIONS.stream().noneMatch(uploadedFile.getExtension().substring(1)::equalsIgnoreCase)) {
+        if (Arrays.stream(ALLOWED_EXTENSIONS).noneMatch(uploadedFile.getExtension().substring(1)::equalsIgnoreCase)) {
             ctx.json(new ErrorResponse("WRONG_EXTENSION", "Wrong extension (" + uploadedFile.getExtension().substring(1) + "). Supported extensions: " + ALLOWED_EXTENSIONS))
                     .status(400);
 
