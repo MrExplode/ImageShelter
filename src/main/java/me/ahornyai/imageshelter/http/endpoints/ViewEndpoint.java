@@ -8,13 +8,15 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.regex.Pattern;
 
 public class ViewEndpoint implements Handler {
     private static final Pattern PATH_TRAVERSAL = Pattern.compile("[^0-9A-Za-z.]");
 
     @Override
-    public void handle(@NotNull Context ctx) throws FileNotFoundException {
+    public void handle(@NotNull Context ctx) throws IOException {
         String fileParam = ctx.pathParam("file");
 
         if (PATH_TRAVERSAL.matcher(fileParam).find()) {
@@ -36,6 +38,11 @@ public class ViewEndpoint implements Handler {
             return;
         }
 
+        String contentType = Files.probeContentType(file.toPath());
+
+        if (contentType != null) {
+            ctx.res.addHeader("Content-Type", contentType);
+        }
         //TODO: decrypt, compress
 
         ctx.result(new FileInputStream(file));
