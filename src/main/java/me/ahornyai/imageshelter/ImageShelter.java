@@ -30,7 +30,6 @@ public class ImageShelter {
             System.exit(1);
         }
 
-        //TODO: fileHandler
         this.httpHandler = new HttpHandler(getConfig().getPort());
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::onStop));

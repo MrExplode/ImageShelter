@@ -1,9 +1,9 @@
 package me.ahornyai.imageshelter.http.endpoints;
 
-import io.javalin.core.util.FileUtil;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import io.javalin.http.UploadedFile;
+import lombok.extern.slf4j.Slf4j;
 import me.ahornyai.imageshelter.ImageShelter;
 import me.ahornyai.imageshelter.http.responses.ErrorResponse;
 import me.ahornyai.imageshelter.http.responses.SuccessUploadResponse;
@@ -16,9 +16,10 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.SecretKey;
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.UUID;
 
+@Slf4j
 public class UploadEndpoint implements Handler {
     private static final String[] ALLOWED_EXTENSIONS = ImageShelter.getInstance().getConfig().getAllowedExtensions();
 
@@ -62,21 +63,22 @@ public class UploadEndpoint implements Handler {
             return;
         }
 
-        //TODO: compressing, secure random filename
-        String name = RandomStringUtils.randomAlphanumeric(32) + uploadedFile.getExtension();
+        //TODO: compressing
+        String name = UUID.randomUUID() + uploadedFile.getExtension();
 
         try {
             SecretKey key = AESUtil.generateKey();
-            byte[] IV = name.substring(0, 16).getBytes(StandardCharsets.UTF_8);
             byte[] file = IOUtils.toByteArray(uploadedFile.getContent());
-            byte[] encrypted = AESUtil.encrypt(file, key, IV);
+            byte[] encrypted = AESUtil.encrypt(file, key);
 
             FileUtils.writeByteArrayToFile(new File("uploads/" + name), encrypted);
 
             ctx.json(new SuccessUploadResponse(name, AESUtil.getKeyAsString(key)));
         }catch (Exception ex) {
-            ex.printStackTrace();
-            ctx.json(new ErrorResponse("ENCRYPTION_ERROR", "Unexpected error with encryption. Please open a github issue."));
+            String requestID = RandomStringUtils.randomAlphanumeric(16);
+            log.error("Unexpected error (Request id: " + requestID + "):", ex);
+
+            ctx.json(new ErrorResponse("UNEXPECTED_ERROR", "Unexpected error with encryption, or upload. Please open a github issue. (Request id: " + requestID + ")"));
         }
     }
 }

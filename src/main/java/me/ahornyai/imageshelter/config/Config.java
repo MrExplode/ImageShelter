@@ -10,4 +10,6 @@ public class Config {
     private final String[] secrets = new String[]{RandomStringUtils.randomAlphanumeric(32)};
 
     private final String[] allowedExtensions = new String[]{"png", "jpg", "jpeg", "bmp", "gif"};
+
+    private final String uploadFolder = "uploads";
 }

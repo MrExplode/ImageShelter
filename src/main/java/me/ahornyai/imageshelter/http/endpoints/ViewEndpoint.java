@@ -2,29 +2,35 @@ package me.ahornyai.imageshelter.http.endpoints;
 
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
+import me.ahornyai.imageshelter.ImageShelter;
 import me.ahornyai.imageshelter.http.responses.ErrorResponse;
+import me.ahornyai.imageshelter.utils.AESUtil;
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 
+import javax.crypto.SecretKey;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.regex.Pattern;
 
 public class ViewEndpoint implements Handler {
-    private static final Pattern PATH_TRAVERSAL = Pattern.compile("[^0-9A-Za-z.]");
+    private static String EXPECTED_PATH = null;
 
     @Override
     public void handle(@NotNull Context ctx) throws IOException {
+        if (EXPECTED_PATH == null)
+            EXPECTED_PATH = new File(ImageShelter.getInstance().getConfig().getUploadFolder()).getCanonicalPath();
+
         String fileParam = ctx.pathParam("file");
         String keyParam = ctx.pathParam("key");
 
-        if (PATH_TRAVERSAL.matcher(fileParam).find()) {
+        File file = new File(ImageShelter.getInstance().getConfig().getUploadFolder(), fileParam);
+
+        if (!file.getCanonicalPath().startsWith(EXPECTED_PATH)) {
             ctx.redirect("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+
             return;
         }
-
-        File file = new File("uploads" + File.separator + fileParam);
 
         if (!file.exists()) {
             ctx.json(new ErrorResponse("FILE_DOES_NOT_EXIST","This file does not exist."));
@@ -38,13 +44,41 @@ public class ViewEndpoint implements Handler {
             return;
         }
 
+        //TODO: compress
+        SecretKey secretKey;
+        byte[] encrypted;
+        byte[] decrypted;
+
+        try {
+            secretKey = AESUtil.getKeyFromString(keyParam);
+        }catch (Exception ex) {
+            ctx.json(new ErrorResponse("BAD_KEY_FORMAT", "Bad key format."));
+
+            return;
+        }
+
+        try {
+            encrypted = FileUtils.readFileToByteArray(file);
+        }catch (Exception ex) {
+            ctx.json(new ErrorResponse("READ_ERROR", "Failed to read this file."));
+
+            return;
+        }
+
+        try {
+            decrypted = AESUtil.decrypt(encrypted, secretKey);
+        }catch (Exception ex) {
+            ctx.json(new ErrorResponse("DECRYPT_ERROR", "Failed to decrypt (Bad key?)."));
+
+            return;
+        }
+
         String contentType = Files.probeContentType(file.toPath());
 
         if (contentType != null) {
             ctx.res.addHeader("Content-Type", contentType);
         }
-        //TODO: decrypt, compress
 
-        ctx.result(new FileInputStream(file));
+        ctx.result(decrypted);
     }
 }
