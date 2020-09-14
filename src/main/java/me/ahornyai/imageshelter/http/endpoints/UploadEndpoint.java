@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.SecretKey;
 import java.io.File;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -73,7 +74,7 @@ public class UploadEndpoint implements Handler {
 
             FileUtils.writeByteArrayToFile(new File("uploads/" + name), encrypted);
 
-            ctx.json(new SuccessUploadResponse(name, AESUtil.getKeyAsString(key)));
+            ctx.json(new SuccessUploadResponse(URLEncoder.encode(name, "UTF-8"), URLEncoder.encode(AESUtil.getKeyAsString(key), "UTF-8")));
         }catch (Exception ex) {
             String requestID = RandomStringUtils.randomAlphanumeric(16);
             log.error("Unexpected error (Request id: " + requestID + "):", ex);
