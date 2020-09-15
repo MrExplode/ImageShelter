@@ -1,10 +1,13 @@
 # ImageShelter
 Free, open source, encrypted image shelter.
 
-**STATUS: IN-DEVELOPMENT**
-
-# TO-DO
-- Compressing
+# Features
+- AES-256 encrypted keys
+- JSON responses
+- Extra compressing with GZIP
+- Random file names
+- Configurable
+- Not only an image storage, you can store other files.
 
 # License
 ```

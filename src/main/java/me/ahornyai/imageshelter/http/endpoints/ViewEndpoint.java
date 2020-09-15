@@ -24,10 +24,13 @@ package me.ahornyai.imageshelter.http.endpoints;
 
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
+import lombok.extern.slf4j.Slf4j;
 import me.ahornyai.imageshelter.ImageShelter;
 import me.ahornyai.imageshelter.http.responses.ErrorResponse;
 import me.ahornyai.imageshelter.utils.AESUtil;
+import me.ahornyai.imageshelter.utils.CompressUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.SecretKey;
@@ -35,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
+@Slf4j
 public class ViewEndpoint implements Handler {
     private static String EXPECTED_PATH = null;
 
@@ -66,32 +70,43 @@ public class ViewEndpoint implements Handler {
             return;
         }
 
-        //TODO: compress
         SecretKey secretKey;
         byte[] encrypted;
         byte[] decrypted;
+        byte[] decompressed;
 
         try {
             secretKey = AESUtil.getKeyFromString(keyParam);
         }catch (Exception ex) {
             ctx.json(new ErrorResponse("BAD_KEY_FORMAT", "Bad key format."));
-
             return;
         }
 
         try {
             encrypted = FileUtils.readFileToByteArray(file);
         }catch (Exception ex) {
-            ctx.json(new ErrorResponse("READ_ERROR", "Failed to read this file."));
+            log.debug("File read error. ", ex);
 
+            ctx.json(new ErrorResponse("READ_ERROR", "Failed to read this file."));
             return;
         }
 
         try {
-            decrypted = AESUtil.decrypt(encrypted, secretKey);
-        }catch (Exception ex) {
-            ctx.json(new ErrorResponse("DECRYPT_ERROR", "Failed to decrypt (Bad key?)."));
+            decompressed = CompressUtil.decompress(encrypted);
+        }catch (IOException ex) {
+            String requestID = RandomStringUtils.randomAlphanumeric(16);
+            log.error("Decompressing error (Request id: " + requestID + "):", ex);
 
+            ctx.json(new ErrorResponse("UNEXPECTED_ERROR", "Unexpected error with decompressing. If you are the server owner please open a github issue with the exception. (Request id: " + requestID + ")"));
+            return;
+        }
+
+        try {
+            decrypted = AESUtil.decrypt(decompressed, secretKey);
+        }catch (Exception ex) {
+            log.debug("Decryption error. ", ex);
+
+            ctx.json(new ErrorResponse("DECRYPT_ERROR", "Failed to decrypt (Bad key?)."));
             return;
         }
 

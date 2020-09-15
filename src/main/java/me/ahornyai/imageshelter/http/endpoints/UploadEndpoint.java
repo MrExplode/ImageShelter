@@ -30,6 +30,7 @@ import me.ahornyai.imageshelter.ImageShelter;
 import me.ahornyai.imageshelter.http.responses.ErrorResponse;
 import me.ahornyai.imageshelter.http.responses.SuccessUploadResponse;
 import me.ahornyai.imageshelter.utils.AESUtil;
+import me.ahornyai.imageshelter.utils.CompressUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -92,6 +93,7 @@ public class UploadEndpoint implements Handler {
         SecretKey key;
         byte[] file;
         byte[] encrypted;
+        byte[] compressed;
 
         try {
             file = IOUtils.toByteArray(uploadedFile.getContent());
@@ -113,7 +115,16 @@ public class UploadEndpoint implements Handler {
         }
 
         try {
-            FileUtils.writeByteArrayToFile(new File("uploads/" + name), encrypted);
+            compressed = CompressUtil.compress(encrypted);
+        }catch (IOException ex) {
+            log.error("Compressing error (Request id: " + requestID + "):", ex);
+
+            ctx.json(new ErrorResponse("UNEXPECTED_ERROR", "Unexpected error with compressing. If you are the server owner please open a github issue with the exception. (Request id: " + requestID + ")"));
+            return;
+        }
+
+        try {
+            FileUtils.writeByteArrayToFile(new File("uploads/" + name), compressed);
 
             ctx.json(new SuccessUploadResponse(URLEncoder.encode(name, "UTF-8"), URLEncoder.encode(AESUtil.getKeyAsString(key), "UTF-8")));
         }catch (Exception ex) {
