@@ -2,7 +2,7 @@
 Free, open source, encrypted image shelter.
 
 # Features
-- AES-256 encrypted keys
+- AES-256 encrypted storage
 - JSON responses
 - Extra compressing with GZIP
 - Random file names
