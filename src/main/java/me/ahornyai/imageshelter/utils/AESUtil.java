@@ -43,13 +43,13 @@ public class AESUtil {
     }
 
     public SecretKey getKeyFromString(String str) {
-        byte[] decodedKey = Base64.getDecoder().decode(str);
+        byte[] decodedKey = Base64.getUrlDecoder().decode(str);
 
         return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
     }
 
     public String getKeyAsString(SecretKey key) {
-        return Base64.getEncoder().encodeToString(key.getEncoded());
+        return Base64.getUrlEncoder().encodeToString(key.getEncoded());
     }
 
     public byte[] encrypt(byte[] byteArray, SecretKey key) throws Exception {
