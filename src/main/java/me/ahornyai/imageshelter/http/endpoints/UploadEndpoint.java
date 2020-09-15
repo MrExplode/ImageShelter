@@ -38,6 +38,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.SecretKey;
 import java.io.File;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.UUID;
@@ -86,22 +87,39 @@ public class UploadEndpoint implements Handler {
             return;
         }
 
-        //TODO: compressing
         String name = UUID.randomUUID() + uploadedFile.getExtension();
+        String requestID = RandomStringUtils.randomAlphanumeric(16);
+        SecretKey key;
+        byte[] file;
+        byte[] encrypted;
 
         try {
-            SecretKey key = AESUtil.generateKey();
-            byte[] file = IOUtils.toByteArray(uploadedFile.getContent());
-            byte[] encrypted = AESUtil.encrypt(file, key);
+            file = IOUtils.toByteArray(uploadedFile.getContent());
+        } catch (IOException ex) {
+            log.error("File error (Request id: " + requestID + "):", ex);
 
+            ctx.json(new ErrorResponse("UNEXPECTED_ERROR", "Unexpected error at file content converting to byte array. If you are the server owner please open a github issue with the exception. (Request id: " + requestID + ")"));
+            return;
+        }
+
+        try {
+            key = AESUtil.generateKey();
+            encrypted = AESUtil.encrypt(file, key);
+        }catch (Exception ex) {
+            log.error("Encryption error (Request id: " + requestID + "):", ex);
+
+            ctx.json(new ErrorResponse("UNEXPECTED_ERROR", "Unexpected error with encryption. If you are the server owner please open a github issue with the exception. (Request id: " + requestID + ")"));
+            return;
+        }
+
+        try {
             FileUtils.writeByteArrayToFile(new File("uploads/" + name), encrypted);
 
             ctx.json(new SuccessUploadResponse(URLEncoder.encode(name, "UTF-8"), URLEncoder.encode(AESUtil.getKeyAsString(key), "UTF-8")));
         }catch (Exception ex) {
-            String requestID = RandomStringUtils.randomAlphanumeric(16);
-            log.error("Unexpected error (Request id: " + requestID + "):", ex);
+            log.error("File saving error (Request id: " + requestID + "):", ex);
 
-            ctx.json(new ErrorResponse("UNEXPECTED_ERROR", "Unexpected error with encryption, or upload. Please open a github issue. (Request id: " + requestID + ")"));
+            ctx.json(new ErrorResponse("UNEXPECTED_ERROR", "Unexpected error with file saving. If you are the server owner please open a github issue with the exception. (Request id: " + requestID + ")"));
         }
     }
 }
