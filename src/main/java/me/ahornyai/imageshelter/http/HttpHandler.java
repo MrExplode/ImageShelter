@@ -25,6 +25,7 @@ package me.ahornyai.imageshelter.http;
 import com.google.gson.Gson;
 import io.javalin.Javalin;
 import io.javalin.plugin.json.JavalinJson;
+import me.ahornyai.imageshelter.http.endpoints.IndexEndpoint;
 import me.ahornyai.imageshelter.http.endpoints.UploadEndpoint;
 import me.ahornyai.imageshelter.http.endpoints.ViewEndpoint;
 
@@ -47,6 +48,7 @@ public class HttpHandler {
     private void makeEndpoints() {
         javalin.get("/:file/:key", new ViewEndpoint());
         javalin.post("/upload", new UploadEndpoint());
+        javalin.get("/", new IndexEndpoint());
     }
 
     public void stop() {
