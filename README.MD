@@ -1,6 +1,11 @@
 # ImageShelter
 Free, open source, encrypted image shelter.
 
+## Improvements compared to the original
+ - Links are actually less than a kilometer long
+ - Working config file
+ - Better configurable index page
+
 # Features
 - AES-256 encrypted storage
 - JSON responses

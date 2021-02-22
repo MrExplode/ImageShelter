@@ -50,7 +50,6 @@ public class UploadEndpoint implements Handler {
 
     @Override
     public void handle(@NotNull Context ctx) {
-        log.info("Upload endpoint query");
         if (!ctx.isMultipartFormData()) {
             ctx.json(new ErrorResponse("NOT_FORM_DATA", "The request's content type is not multipart/form-data."))
                 .status(404);
@@ -129,6 +128,7 @@ public class UploadEndpoint implements Handler {
             FileUtils.writeByteArrayToFile(new File("uploads/" + name), compressed);
 
             ctx.json(new SuccessUploadResponse(URLEncoder.encode(name, "UTF-8"), URLEncoder.encode(Integer.toString(rawKey, 32), "UTF-8")));
+            log.info("Uploaded " + name);
         }catch (Exception ex) {
             log.error("File saving error (Request id: " + requestID + "):", ex);
 
