@@ -27,14 +27,14 @@ import org.apache.commons.lang3.RandomStringUtils;
 
 @Getter
 public class Config {
-    private final Integer port = 8282;
+    private Integer port = 8282;
 
-    private final String[] secrets = new String[]{RandomStringUtils.randomAlphanumeric(32)};
+    private String[] secrets = new String[]{RandomStringUtils.randomAlphanumeric(32)};
 
-    private final String[] allowedExtensions = new String[]{"png", "jpg", "jpeg", "bmp", "gif"};
+    private String[] allowedExtensions = new String[]{"png", "jpg", "jpeg", "bmp", "gif"};
 
-    private final String uploadFolder = "uploads";
+    private String uploadFolder = "uploads";
 
-    private final String indexTitle = "Image Shelter";
-    private final String indexText = "Stored images: %img% %size%";
+    private String indexTitle = "Image Shelter";
+    private String indexText = "Stored images: %img% %size%";
 }
