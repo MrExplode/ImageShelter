@@ -29,6 +29,7 @@ import me.ahornyai.imageshelter.ImageShelter;
 import me.ahornyai.imageshelter.http.responses.ErrorResponse;
 import me.ahornyai.imageshelter.utils.AESUtil;
 import me.ahornyai.imageshelter.utils.CompressUtil;
+import me.ahornyai.imageshelter.utils.ConversionUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -76,7 +77,7 @@ public class ViewEndpoint implements Handler {
         byte[] decompressed;
 
         try {
-            secretKey = AESUtil.getKeyFromString(keyParam);
+            secretKey = AESUtil.getKeyFromString(String.valueOf(ConversionUtil.decode(keyParam)));
         }catch (Exception ex) {
             ctx.json(new ErrorResponse("BAD_KEY_FORMAT", "Bad key format."));
             return;
