@@ -34,7 +34,7 @@ public class HttpHandler {
     private final Javalin javalin;
 
     public HttpHandler(int port) {
-        this.javalin = Javalin.create().start(port);;
+        this.javalin = Javalin.create().start(port);
 
         setupJavalinJson();
         makeEndpoints();

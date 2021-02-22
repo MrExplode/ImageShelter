@@ -31,6 +31,7 @@ import me.ahornyai.imageshelter.http.responses.ErrorResponse;
 import me.ahornyai.imageshelter.http.responses.SuccessUploadResponse;
 import me.ahornyai.imageshelter.utils.AESUtil;
 import me.ahornyai.imageshelter.utils.CompressUtil;
+import me.ahornyai.imageshelter.utils.ConversionUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -41,8 +42,10 @@ import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 public class UploadEndpoint implements Handler {
@@ -82,15 +85,15 @@ public class UploadEndpoint implements Handler {
         }
 
         if (Arrays.stream(ALLOWED_EXTENSIONS).noneMatch(uploadedFile.getExtension().substring(1)::equalsIgnoreCase)) {
-            ctx.json(new ErrorResponse("WRONG_EXTENSION", "Wrong extension (" + uploadedFile.getExtension().substring(1) + "). Supported extensions: " + ALLOWED_EXTENSIONS))
+            ctx.json(new ErrorResponse("WRONG_EXTENSION", "Wrong extension (" + uploadedFile.getExtension().substring(1) + "). Supported extensions: " + Arrays.toString(ALLOWED_EXTENSIONS)))
                     .status(400);
 
             return;
         }
 
-        String name = UUID.randomUUID() + uploadedFile.getExtension();
+        String name = ConversionUtil.encode(ThreadLocalRandom.current().nextLong(0xFFFFFFFFL)) + uploadedFile.getExtension();
         String requestID = RandomStringUtils.randomAlphanumeric(16);
-        SecretKey key;
+        long longKey;
         byte[] file;
         byte[] encrypted;
         byte[] compressed;
@@ -105,7 +108,8 @@ public class UploadEndpoint implements Handler {
         }
 
         try {
-            key = AESUtil.generateKey();
+            longKey = ThreadLocalRandom.current().nextLong(0xFFFFFFFFL);
+            SecretKey key = AESUtil.getKeyFromString(String.valueOf(longKey));
             encrypted = AESUtil.encrypt(file, key);
         }catch (Exception ex) {
             log.error("Encryption error (Request id: " + requestID + "):", ex);
@@ -126,7 +130,7 @@ public class UploadEndpoint implements Handler {
         try {
             FileUtils.writeByteArrayToFile(new File("uploads/" + name), compressed);
 
-            ctx.json(new SuccessUploadResponse(URLEncoder.encode(name, "UTF-8"), URLEncoder.encode(AESUtil.getKeyAsString(key), "UTF-8")));
+            ctx.json(new SuccessUploadResponse(URLEncoder.encode(name, "UTF-8"), URLEncoder.encode(ConversionUtil.encode(longKey), "UTF-8")));
         }catch (Exception ex) {
             log.error("File saving error (Request id: " + requestID + "):", ex);
 
