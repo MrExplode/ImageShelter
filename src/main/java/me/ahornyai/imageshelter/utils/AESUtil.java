@@ -23,6 +23,7 @@
 package me.ahornyai.imageshelter.utils;
 
 import lombok.experimental.UtilityClass;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -46,6 +47,12 @@ public class AESUtil {
         byte[] decodedKey = Base64.getUrlDecoder().decode(str);
 
         return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+    }
+
+    public SecretKey genKeyFromString(String str) {
+        byte[] hashedKey = DigestUtils.sha256(str);
+
+        return new SecretKeySpec(hashedKey, 0, hashedKey.length, "AES");
     }
 
     public String getKeyAsString(SecretKey key) {

@@ -31,7 +31,6 @@ import me.ahornyai.imageshelter.http.responses.ErrorResponse;
 import me.ahornyai.imageshelter.http.responses.SuccessUploadResponse;
 import me.ahornyai.imageshelter.utils.AESUtil;
 import me.ahornyai.imageshelter.utils.CompressUtil;
-import me.ahornyai.imageshelter.utils.ConversionUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -42,9 +41,7 @@ import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
@@ -53,6 +50,7 @@ public class UploadEndpoint implements Handler {
 
     @Override
     public void handle(@NotNull Context ctx) {
+        log.info("Upload endpoint query");
         if (!ctx.isMultipartFormData()) {
             ctx.json(new ErrorResponse("NOT_FORM_DATA", "The request's content type is not multipart/form-data."))
                 .status(404);
@@ -91,9 +89,9 @@ public class UploadEndpoint implements Handler {
             return;
         }
 
-        String name = ConversionUtil.encode(ThreadLocalRandom.current().nextLong(0xFFFFFFFFL)) + uploadedFile.getExtension();
+        String name = Integer.toString(ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE), 32) + uploadedFile.getExtension();
         String requestID = RandomStringUtils.randomAlphanumeric(16);
-        long longKey;
+        int rawKey;
         byte[] file;
         byte[] encrypted;
         byte[] compressed;
@@ -108,8 +106,8 @@ public class UploadEndpoint implements Handler {
         }
 
         try {
-            longKey = ThreadLocalRandom.current().nextLong(0xFFFFFFFFL);
-            SecretKey key = AESUtil.getKeyFromString(String.valueOf(longKey));
+            rawKey = ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE);
+            SecretKey key = AESUtil.genKeyFromString(String.valueOf(rawKey));
             encrypted = AESUtil.encrypt(file, key);
         }catch (Exception ex) {
             log.error("Encryption error (Request id: " + requestID + "):", ex);
@@ -130,7 +128,7 @@ public class UploadEndpoint implements Handler {
         try {
             FileUtils.writeByteArrayToFile(new File("uploads/" + name), compressed);
 
-            ctx.json(new SuccessUploadResponse(URLEncoder.encode(name, "UTF-8"), URLEncoder.encode(ConversionUtil.encode(longKey), "UTF-8")));
+            ctx.json(new SuccessUploadResponse(URLEncoder.encode(name, "UTF-8"), URLEncoder.encode(Integer.toString(rawKey, 32), "UTF-8")));
         }catch (Exception ex) {
             log.error("File saving error (Request id: " + requestID + "):", ex);
 
