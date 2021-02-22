@@ -35,16 +35,28 @@ public class IndexEndpoint implements Handler {
     @Override
     public void handle(@NotNull Context ctx) {
         int imageCount = 0;
+        long imageSize = 0;
 
         File folder = new File(ImageShelter.getInstance().getConfig().getUploadFolder());
 
         if (folder.exists() && folder.isDirectory()) {
             File[] files = folder.listFiles();
 
-            if (files != null)
+            if (files != null) {
                 imageCount = files.length;
+                for (File file : files)
+                    imageSize += file.length();
+            }
         }
 
-        ctx.html("<h3>Stored images: " + imageCount + "</h3><a href=\"https://github.com/ahornyai/ImageShelter\">GitHub</a>");
+        imageSize /= 1000000;
+        String sizeText;
+        if (imageSize < 1000)
+            sizeText = imageSize + " MB";
+        else
+            sizeText = imageSize / 1000 + " GB";
+        String title = ImageShelter.getInstance().getConfig().getIndexTitle();
+        String info = ImageShelter.getInstance().getConfig().getIndexText().replace("%img%", String.valueOf(imageCount)).replace("%size%", sizeText).trim();
+        ctx.html("<html> <head> <title>" + title + "</title> <style>.text{color: white; font-weight: 600; font-family: BlinkMacSystemFont,-apple-system,\"Segoe UI\",Roboto,Oxygen,Ubuntu,Cantarell,\"Fira Sans\",\"Droid Sans\",\"Helvetica Neue\",Helvetica,Arial,sans-serif;}</style> </head> <body style=\"background-color: 181818;\"> <div style=\"display: flex; align-items: center; margin: auto; height: 100vh; width: 100vh;\"> <div style=\"flex-grow: 1; width: auto; max-width: 960; margin-left: auto; margin-right: auto;\"> <h1 class=\"text\">" + title + "</h1> <h2 class=\"text\">" + info + "</h2> </div></div></body></html>");
     }
 }

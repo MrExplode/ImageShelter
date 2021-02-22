@@ -34,4 +34,7 @@ public class Config {
     private final String[] allowedExtensions = new String[]{"png", "jpg", "jpeg", "bmp", "gif"};
 
     private final String uploadFolder = "uploads";
+
+    private final String indexTitle = "Image Shelter";
+    private final String indexText = "Stored images: %img% %size%";
 }
