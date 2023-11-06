@@ -57,3 +57,6 @@ shadowJar {
         attributes('Main-Class': 'me.ahornyai.imageshelter.ImageShelter')
     }
 }
+
+jar.enabled = false
+assemble.dependsOn(shadowJar)
